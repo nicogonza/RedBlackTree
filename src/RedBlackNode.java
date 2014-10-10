@@ -11,13 +11,14 @@ public class RedBlackNode {
         element =e;
         left=l;
         right=r;
+        color=0;
     }
 
     public Element getElement(){
-        //to do
+        return element;
     }
     public int getColor(){
-        //To DO
+        return color;
     }
     public RedBlackNode getLeftChild(){
         //to do
