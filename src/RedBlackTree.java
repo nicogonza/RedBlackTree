@@ -1,24 +1,28 @@
+
+
 /**
- * Created by n_gonzal on 10/9/2014.
+ * Created by Nicolas Gonzalez on 10/9/2014.
  */
 public class RedBlackTree implements TreeInterface {
 
     RedBlackNode root;
-    RedBlackNode t=new RedBlackNode();
-    @java.lang.Override
+    RedBlackNode t;
+
+
     public String find(int key) {
+        t = root;
         //key has matched a key on the tree
-        if(t.getElement().getKey()==key)
+        if (t.getElement().getKey() == key)
             return t.getElement().getValue();
         //looks at left subtree
-        if(t.getElement().getKey()< key)
-        {
-            return find(t.getLeftChild().getElement().getKey());
+        if (t.getElement().getKey() < key) {
+            t = t.getLeftChild();
+            return find(key);
         }
         //look at right subtree
-        if(t.getElement().getKey()> key)
-        {
-            return find(t.getRightChild().getElement().getKey());
+        if (t.getElement().getKey() > key) {
+            t = t.getRightChild();
+            return find(key);
         }
 
         return null;
@@ -27,92 +31,147 @@ public class RedBlackTree implements TreeInterface {
 
     public void insert(int key, String value) {
 
-        if(root==null) {
-            root = new RedBlackNode(new Element(key,value));
+        if (root == null) {
+            root = new RedBlackNode(new Element(key, value));
+            root.setColor(1);
         }
-        RedBlackNode t=root;
-        while (true) {
-            int Comparison = compare(key,t.getElement().getKey());
-            if (Comparison == 0) {
+        else{t =root;
+        while (t!=null){
+            boolean Comparison = compare(key, t.getElement().getKey());
+            if (Comparison == true) {
                 t.SetElement(key, value);
-            } else if (Comparison < 0) {
+            } else if (Comparison==false) {
                 if (t.getLeftChild() == null) {
-                    t.setLeftChild(new RedBlackNode(new Element(key,value)));
-                    afterInsertion(t.getLeftChild());
+                    t.setLeftChild(new RedBlackNode(new Element(key, value)));
+                     afterInsertion(t.getLeftChild());
                     break;
                 }
                 t = t.getLeftChild();
             } else {
                 if (t.getRightChild() == null) {
-                    t.setRightChild(new RedBlackNode(new Element(key,value)));
-                    afterInsertion((Node) n.getRight());
+                    t.setRightChild(new RedBlackNode(new Element(key, value)));
+                    afterInsertion(t.getRightChild());
                     break;
                 }
                 t = t.getRightChild();
             }
         }
     }
+    }
 
 
     public void delete(int key) {
-        throw new UnsupportedOperationException( );
+        throw new UnsupportedOperationException();
     }
 
 
     public String remove(int key) {
-        throw new UnsupportedOperationException( );
+        throw new UnsupportedOperationException();
     }
 
     @java.lang.Override
-    public String toString(){
-        throw new UnsupportedOperationException( );
+    public String toString() {
+        RedBlackNode tmp = root;
 
+        String tree="";
+        if(tmp==null)
+            return "this tree is empty";
+       tree="\nroot:" + tmp.getColorString() + "(" + tmp.getElement().getKey() + "," + tmp.getElement().getValue() + ")";
+        while (tmp != null) {
+            if(tmp.getLeftChild()!=null){
+                tree+="\nroot-left:" + tmp.getLeftChild().getColorString() + "(" + tmp.getLeftChild().getElement().getKey() + "," + tmp.getLeftChild().getElement().getValue() + ")";
+            }
+
+            if(tmp.getRightChild()!=null){
+                System.out.println("has right node true");
+                tree+="\nroot-right:" + tmp.getRightChild().getColorString() + "(" + tmp.getRightChild().getElement().getKey() + "," + tmp.getRightChild().getElement().getValue() + ")";
+                tmp=getParent(tmp);
+            }
+            tmp=tmp.getLeftChild();
+        }
+        return tree;
     }
 
     //All methods after this comment have been added
-    public void afterInsertion(RedBlackNode t){
-        if (n != null && n != root && isRed(parentOf(n))) {
+    //added getParent, getSibling,getGrandParent to easily find a nodes 'family'
+    //compares 2 keys to find if they are the same node.
+    private boolean compare(int key, int key1) {
+        if (key == key1)
+            return true;
+        else return false;
+    }
+    public RedBlackNode getParent(RedBlackNode t) {
+        RedBlackNode tmp = root;
+        if (tmp == null)
+            return null;
+        if (tmp.getLeftChild() == t || tmp.getRightChild() == t)
+            return tmp;
+        if (tmp.getElement().getKey() > t.getElement().getKey())
+            return getParent(t.getLeftChild());
+        if (tmp.getElement().getKey() < t.getElement().getKey())
+            return getParent(t.getLeftChild());
+        return null;
+    }
 
-            // Step 2a (simplest): Recolor, and move up to see if more work
-            // needed
-            if (isRed(siblingOf(parentOf(n)))) {
-                setColor(parentOf(n), Color.black);
-                setColor(siblingOf(parentOf(n)), Color.black);
-                setColor(grandparentOf(n), Color.red);
-                adjustAfterInsertion(grandparentOf(n));
+    public RedBlackNode getSibling(RedBlackNode t) {
+        if (getParent(t) != null) {
+            if (t.getElement().getKey() < getParent(t).getElement().getKey())
+                return getParent(t).getRightChild();
+            else
+                return getParent(t).getLeftChild();
+        }
+        return null;
+    }
+
+    public RedBlackNode getGrandParent(RedBlackNode t) {
+        return getParent(getParent(t));
+    }
+
+    public void rotateLeft(RedBlackNode t) {
+        throw new UnsupportedOperationException("coming soon");
+
+
+    }
+
+    public void rotateRight(RedBlackNode t) {
+        throw new UnsupportedOperationException("coming soon");
+
+
+
+    }
+
+    public void afterInsertion(RedBlackNode t) {
+        if (t != null && t != root && getParent(t).isRed()) {
+
+            if (getSibling(getParent(t)).isRed()) {
+                getParent(t).setColor(1);
+                getSibling(t).setColor(1);
+                getGrandParent(t).setColor(0);
+                afterInsertion(getGrandParent(t));
             }
 
-            // Step 2b: Restructure for a parent who is the left child of the
-            // grandparent. This will require a single right rotation if n is
-            // also
-            // a left child, or a left-right rotation otherwise.
-            else if (parentOf(n) == leftOf(grandparentOf(n))) {
-                if (n == rightOf(parentOf(n))) {
-                    rotateLeft(n = parentOf(n));
+            else if (getParent(t) == getGrandParent(t).getLeftChild()) {
+                if (t == getParent(t).getRightChild()) {
+                    //rotateLeft(t = getParent(t));
                 }
-                setColor(parentOf(n), Color.black);
-                setColor(grandparentOf(n), Color.red);
-                rotateRight(grandparentOf(n));
+                getParent(t).setColor(1);
+                getGrandParent(t).setColor(0);
+               // rotateRight(getGrandParent(t));
             }
-
-            // Step 2c: Restructure for a parent who is the right child of the
-            // grandparent. This will require a single left rotation if n is
-            // also
-            // a right child, or a right-left rotation otherwise.
-            else if (parentOf(n) == rightOf(grandparentOf(n))) {
-                if (n == leftOf(parentOf(n))) {
-                    rotateRight(n = parentOf(n));
+            else if (getParent(t) == getGrandParent(t).getRightChild()) {
+                if (t == getGrandParent(t).getLeftChild()) {
+                    //rotateRight(t = getParent(t));
                 }
-                setColor(parentOf(n), Color.black);
-                setColor(grandparentOf(n), Color.red);
-                rotateLeft(grandparentOf(n));
+                getParent(t).setColor(1);
+                getGrandParent(t).setColor(0);
+                //rotateLeft(getGrandParent(t));
             }
         }
 
-        // Step 3: Color the root black
-        setColor((Node) root, Color.black);
-    }
-
+        // root is always black
+        root.setColor(1);
     }
 
 }
+
+
