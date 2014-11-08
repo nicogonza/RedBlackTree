@@ -8,7 +8,9 @@ public class RedBlackNode {
     private RedBlackNode right;
     private int color;
     //added
-
+    public RedBlackNode parent;
+    public RedBlackNode grand;
+    public RedBlackNode great;
 
     public RedBlackNode(Element e, RedBlackNode l, RedBlackNode r) {
         element = e;
@@ -49,33 +51,49 @@ public class RedBlackNode {
         return left;
     }
 
-    public void setLeftChild(RedBlackNode n) {
-        left = n;
-    }
-
     public RedBlackNode getRightChild() {
         return right;
     }
 
-    public void setRightChild(RedBlackNode n) {
-        right = n;
-    }
 
     //All methods following this comment have been added additionally to original instructions.
     //added set element for node
-    public void SetElement(int k, String v) {
+    public RedBlackNode setRightChild(RedBlackNode n) {
+        right = n;
+        return right;
+    }
+    public RedBlackNode setLeftChild(RedBlackNode n) {
+        left = n;return left;
+    }
+
+    public void setElement(int k, String v) {
         element = new Element(k, v);
     }
 
     //added isRed to easily check if is red  and imprpove readibility of tree code.
-    public boolean isRed() {
-        if (getColor() == 0) return true;
-        else return false;
-    }
+
     public String getColorString() {
         if(getColor()==0)
             return "RED";
         return "BLACK";
+    }
+    public RedBlackNode getParent(){
+        return parent;
+    }
+    public void setParent(RedBlackNode a){
+        parent=a;
+    }
+    public RedBlackNode getGrandParent(){
+        return grand;
+    }
+    public void setGrand(RedBlackNode a){
+         grand=a;
+    }
+    public RedBlackNode getGreat(){
+        return great;
+    }
+    public void setGreatParent(RedBlackNode a){
+        great=a;
     }
 
 
