@@ -7,10 +7,8 @@ public class RedBlackNode {
     private RedBlackNode left;
     private RedBlackNode right;
     private int color;
-    //added
-    public RedBlackNode parent;
-    public RedBlackNode grand;
-    public RedBlackNode great;
+
+
 
     public RedBlackNode(Element e, RedBlackNode l, RedBlackNode r) {
         element = e;
@@ -77,6 +75,7 @@ public class RedBlackNode {
             return "RED";
         return "BLACK";
     }
+    /*
     public RedBlackNode getParent(){
         return parent;
     }
@@ -94,7 +93,7 @@ public class RedBlackNode {
     }
     public void setGreatParent(RedBlackNode a){
         great=a;
-    }
+    }*/
 
 
 }

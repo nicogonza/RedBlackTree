@@ -6,28 +6,40 @@ public class RedBlackTree implements TreeInterface {
 
     RedBlackNode root;
     //works as curr node
-    RedBlackNode t;
+    RedBlackNode curr;
     RedBlackNode header;
-    RedBlackNode nullNode;
+    static RedBlackNode nullNode;
+    RedBlackNode parent;
+    RedBlackNode grand;
+    RedBlackNode great;
+    //intializers
     public RedBlackTree(){
-        root=null;
-        t=root;
+        header=new RedBlackNode(new Element(-9999999,"header"));
+        header.setColor(1);
+        header.setLeftChild(nullNode);
+        header.setRightChild(nullNode);
+    }
+    static {
+        nullNode=new RedBlackNode(null);
+        nullNode.setColor(1);
+        nullNode.setLeftChild(null);
+        nullNode.setRightChild(null);
     }
 
     //to do
     public String find(int key) {
-        t = root;
+        curr = root;
         //key has matched a key on the tree
-        if (t.getElement().getKey() == key)
-            return t.getElement().getValue();
+        if (curr.getElement().getKey() == key)
+            return curr.getElement().getValue();
         //looks at left subtree
-        if (t.getElement().getKey() < key) {
-            t = t.getLeftChild();
+        if (curr.getElement().getKey() < key) {
+            curr = curr.getLeftChild();
             return find(key);
         }
         //look at right subtree
-        if (t.getElement().getKey() > key) {
-            t = t.getRightChild();
+        if (curr.getElement().getKey() > key) {
+            curr = curr.getRightChild();
             return find(key);
         }
 
@@ -36,41 +48,37 @@ public class RedBlackTree implements TreeInterface {
 
 
     public void insert(int key, String value) {
-
+        curr=parent = grand = header;
         Element item=new Element(key,value);
-        if(root==null){
-            root=new RedBlackNode(item);
+        nullNode.setElement(key,value);
+        while(compare(item,curr.getElement()) != 0 )
+        {
+            great = grand; grand = parent; parent = curr;
+            curr = compare(item, curr.getElement()) < 0 ?
+                    getLeftOf(curr) : getRightOf(curr);
+
+            // Check if two red children; fix if so
+            if( getColorOf(getLeftOf(curr)).equals("RED") && getColorOf(getRightOf(curr)).equals("RED")){
+                handleReorient( item );
+            }
+
+        }
+
+        // Insertion fails if already present
+        if( curr != nullNode ){
+           //curr.setElement(item.getKey(),item.getValue());
             return;
         }
-        t=root;
-        t.setParent(root);
-        t.setGrand(root);
-        //finds where to insert node
-        while(true)
-        {
-            t.setGreatParent(getGrandOf(t));
-            t.setGrand(getParentOf(t));
-            t.setParent(t);
-            if(compare(key,t)==0){
-                t.setElement(key,value);
-                return;
-            }
-            else if(compare(key,t)<0) {
-                if (getLeftOf(t)== null) {
-                    t.setLeftChild(new RedBlackNode(item));
-                    handleReorient(getLeftOf(t));
-                    break;
-                }
-                t = getLeftOf(t);
-            }else{
-                if(getRightOf(t)==null){
-                    t.setRightChild(new RedBlackNode(item));
-                    handleReorient(getRightOf(t));
-                    break;
-                }
-                t=getRightOf(t);
-            }
-        }
+
+        curr = new RedBlackNode( item, nullNode, nullNode );
+
+        // Attach to parent
+        if( compare(item, parent.getElement()) < 0 )
+            parent.setLeftChild(curr);
+        else
+            parent.setRightChild(curr);
+        handleReorient(item);
+
 
     }
 
@@ -86,19 +94,19 @@ public class RedBlackTree implements TreeInterface {
     }
     @java.lang.Override
     public String toString() {
-        return treeToString(root,"root");
+        return treeToString(header.getRightChild(),"root");
 
     }
     private String treeToString(RedBlackNode t,String p){
         StringBuilder prefix=new StringBuilder();
         StringBuilder tree=new StringBuilder();
         prefix.append(p);
-        if(t!=null){
-            tree.append(prefix+":"+t.getColorString()+"("+getKeyOf(t)+","+t.getElement().getValue()+")\n");
-            if(getLeftOf(t)!=null){
+        if(t!=nullNode){
+            tree.append(prefix+":"+getColorOf(t)+"("+getKeyOf(t)+","+t.getElement().getValue()+")\n");
+            if(getLeftOf(t)!=nullNode){
                 tree.append(treeToString(getLeftOf(t), prefix+"-left"));
             }
-            if(getRightOf(t)!=null){
+            if(getRightOf(t)!=nullNode){
                 tree.append(treeToString(getRightOf(t),prefix+ "-right"));
             }
 
@@ -111,209 +119,97 @@ public class RedBlackTree implements TreeInterface {
     //All methods after this comment have been added
     //added getParent, getSibling,getGrandParent to easily find a nodes 'family'
 
-private int compare(int toInsert,RedBlackNode r) {
-    if(r==null)
+private int compare(Element item,Element current){
+    if(item==getRightOf(header).getElement())
         return 1;
-    if(toInsert==r.getElement().getKey())
+    if(item.getKey()==current.getKey())
         return 0;
     //if toinsert should go in the left subtree else right subtree.
-    if(toInsert<r.getElement().getKey())
+    if(item.getKey()<current.getKey())
         return -1;
     else
         return 1;
 }
-    /*public RedBlackNode getParent(RedBlackNode t) {
-        RedBlackNode tmp = root;
-        if(t==root)
-            return null;
-               while(tmp!=null){
-                   if(tmp.getLeftChild()==t||tmp.getRightChild()==t)
-                       return tmp;
-                   else
-                   {
-                       if(tmp.getElement().getKey()>t.getElement().getKey())
-                           tmp=tmp.getLeftChild();
-                       else
-                           tmp=tmp.getRightChild();
-                   }
-               }
-        return null;
-    }
-
-    public RedBlackNode getSibling(RedBlackNode t) {
-        if (getParent(t) != null) {
-            if(getParent(t).getLeftChild()!=null && getParent(t).getRightChild()!=null){
-                if(getParent(t).getLeftChild().getElement().getKey()==t.getElement().getKey())
-                    return getParent(t).getRightChild();
-                if(getParent(t).getRightChild().getElement().getKey()==t.getElement().getKey())
-                    return getParent(t).getLeftChild();
-            }
-
-
-        }
-        return null;
-    }
-
-    public RedBlackNode getGrandParent(RedBlackNode t) {
-        return getParent(getParent(t));
-    }*/
 
 
     //receives current node(calling to reorient)
-    public void handleReorient(RedBlackNode t) {
+    public void handleReorient(Element item) {
+        //double red children, recolor
+            setColorOf(curr,0);
+        if(getLeftOf(curr)!=nullNode)
+            setColorOf(getLeftOf(curr),1);
+        if(getRightOf(curr)!=nullNode)
+            setColorOf(getRightOf(curr), 1);
 
-        //double red problems
-            t.setColor(0);
-            setColorOf(getLeftOf(t),1);
-            setColorOf(getRightOf(t), 1);
-        //double red violation from parent and child
-        if(getColorOf(getParentOf(t))=="RED"){
-            setColorOf(getGrandOf(t),0);
-            if((compare(t.getElement().getKey(),getGrandOf(t))<0)!=(compare(t.getElement().getKey(),t.getParent())<0))
-                t.setParent(rotate(t, getGrandOf(t)));
-            t=rotate(t,getGreatOf(t));
-            t.setColor(1);
+        //double red violation from parent and child must rotate
+        if(getColorOf(parent).equals("RED")){
+            setColorOf(grand,0);
+            if((compare(item,grand.getElement())<0)!=
+               (compare(item,parent.getElement())<0))
+                parent=(rotate(item,grand));
+            curr=rotate(item,great);
+            setColorOf(curr,1);
         }
-        /*
-        if (t != null && t != root && getParent(t)!=null && getParent(t).isRed()) {
-            //parent and sibling of parent are red simply recolor
-            if (getSibling(getParent(t))!=null && getSibling(getParent(t)).isRed()) {
-                getParent(t).setColor(1);
-                    if(getSibling(t)!=null)
-                        getSibling(t).setColor(1);
-                    if(getGrandParent(t)!=null)
-                        getGrandParent(t).setColor(0);
-                afterInsertion(getGrandParent(t));
-            }
-            //parent of t is the left child of the grandparent of t
-            else if (getParent(t) == getGrandParent(t).getLeftChild()) {
-                if (t == getParent(t).getRightChild()) {
-                    t=getParent(t);
-                    rotateLeft(t);
-                }
-                getParent(t).setColor(1);
-                if(getGrandParent(t)!=null){
-                    getGrandParent(t).setColor(0);
-                rotateRight(getGrandParent(t));}
-            }
-            //parent of t is the right child of the grandparent of t
-            else if (getParent(t) == getGrandParent(t).getRightChild()) {
-                if (t == getGrandParent(t).getLeftChild()) {
-                    t=getParent(t);
-                   rotateRight(getParent(t));
-                }
-                getParent(t).setColor(1);
-                if(getGrandParent(t)!=null){
-                    System.out.println("calling.....");
-                getGrandParent(t).setColor(0);
-                rotateLeft(getGrandParent(t));}
-            }
-        }*/
-
-        // root is always black
-        root.setColor(1);
+        setColorOf(header.getRightChild(),1);
     }
-    private RedBlackNode rotate(RedBlackNode torotate,RedBlackNode parent){
 
-        if(compare(getKeyOf(torotate),parent)<0){
-            if(compare(getKeyOf(torotate),getLeftOf(parent))<0){
-                return parent.setLeftChild(rotateWithLeftChild(getLeftOf(parent)));
+    private RedBlackNode rotate(Element item,RedBlackNode parent){
+        if(compare(item,parent.getElement())<0){
+            if(compare(item,getLeftOf(parent).getElement())<0){
+                return parent.setLeftChild(rotateWithLeftChild(getLeftOf(parent)));//LL
             }
 
             else
-                return parent.setLeftChild(rotateWithRightChild(getRightOf(parent)));
+                return parent.setLeftChild(rotateWithRightChild(getLeftOf(parent)));//LR
 
         }
         else
         {
-            if(compare(torotate.getElement().getKey(),getRightOf(parent))<0)
-                return parent.setRightChild(rotateWithLeftChild(getLeftOf(parent)));
+            if(compare(item,getRightOf(parent).getElement())<0)
+                return parent.setRightChild(rotateWithLeftChild(getRightOf(parent)));//RL
             else
-                return parent.setLeftChild(rotateWithRightChild(getRightOf(parent)));
+                return parent.setRightChild(rotateWithRightChild(getRightOf(parent)));//RR
 
         }
 
 
     }
-    public RedBlackNode rotateWithLeftChild(RedBlackNode q){
-        System.out.println("rotating left  "+q.getElement().getKey());
-        RedBlackNode a=getLeftOf(q);
-        q.setLeftChild(getRightOf(a));
-        a.setRightChild(q);
-        return a;
-        /*if (q.getRightChild() == null) {
-            return;
-        }
-        RedBlackNode oldRight = q.getRightChild();
-        System.out.println("old right is "+oldRight.getElement().getKey());
-        q.setRightChild(oldRight.getLeftChild());
-        //if node has no parent it is a root
-        if (getParent(q) == null) {
-            root=oldRight;
-
-        } else if (getParent(q).getLeftChild() == q){
-            getParent(q).setLeftChild(oldRight);
-        } else {
-            getParent(q).setRightChild(oldRight);
-        }
-        oldRight.setLeftChild(q);*/
+    public RedBlackNode rotateWithLeftChild(RedBlackNode k2){
+        RedBlackNode k1=getLeftOf(k2);
+        k2.setLeftChild(getRightOf(k1));
+        k1.setRightChild(k2);
+        return k1;
     }
 
 
-    public RedBlackNode rotateWithRightChild(RedBlackNode a) {
-        System.out.println("rotating right");
+    public RedBlackNode rotateWithRightChild(RedBlackNode k1) {
+        RedBlackNode k2=getRightOf(k1);
+        k1.setRightChild(getLeftOf(k2));
+        k2.setLeftChild(k1);
+        return k2;
 
-        RedBlackNode q=getLeftOf(a);
-        a.setLeftChild(getRightOf(q));
-        q.setRightChild(a);
-        return q;
-        /*
-        if (q.getLeftChild() == null) {
-            return;
-        }
-        RedBlackNode oldLeft = q.getLeftChild();
-        q.setLeftChild(oldLeft.getRightChild());
-        if (getParent(q) == null) {
-            root = oldLeft;
-        } else if (getParent(q).getLeftChild() == q) {
-            getParent(q).setLeftChild(oldLeft);
-        } else {
-            getParent(q).setRightChild(oldLeft);
-        }
-        oldLeft.setRightChild(q);*/
     }
 
     //helper methods to check null pointers
-    private RedBlackNode getParentOf(RedBlackNode a){
-        return a==null ? null: a.getParent();
-    }
-    private RedBlackNode getGrandOf(RedBlackNode a){
-        return a==null ? null: a.getGrandParent();
-    }
-    private RedBlackNode getGreatOf(RedBlackNode a){
-        return a==null ? null: a.getGreat();
-    }
+
     private RedBlackNode getLeftOf(RedBlackNode a){
-        return a==null ? null: a.getLeftChild();
+        return a==nullNode ? nullNode: a.getLeftChild();
 
     }
     private RedBlackNode getRightOf(RedBlackNode a){
-        return a==null ? null: a.getRightChild();
+        return a==nullNode ? nullNode: a.getRightChild();
 
     }
-    private RedBlackNode parentOf(RedBlackNode a){
-        return a==null ? null:a.getParent();
-    }
     private String getColorOf(RedBlackNode a){
-        return a==null ? "":a.getColorString();
+        return a==nullNode ? "":a.getColorString();
     }
     private void setColorOf(RedBlackNode a,int col){
-        if(a!=null){
+        if(a!=nullNode){
             a.setColor(col);
         }
     }
     private int getKeyOf(RedBlackNode a){
-        return a==null ? null:a.getElement().getKey();
+        return a==nullNode ? null:a.getElement().getKey();
     }
 
 
