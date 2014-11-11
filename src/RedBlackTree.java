@@ -4,14 +4,14 @@
  */
 public class RedBlackTree implements TreeInterface {
 
-    RedBlackNode root;
-    //works as curr node
+    RedBlackNode root=nullNode;
     RedBlackNode curr;
     RedBlackNode header;
-    static RedBlackNode nullNode;
+    public static RedBlackNode nullNode;
     RedBlackNode parent;
     RedBlackNode grand;
     RedBlackNode great;
+    private RedBlackNode found ;
     //intializers
     public RedBlackTree(){
         header=new RedBlackNode(new Element(-9999999,"header"));
@@ -28,22 +28,27 @@ public class RedBlackTree implements TreeInterface {
 
     //to do
     public String find(int key) {
-        curr = root;
+        curr = getRightOf(header);
         //key has matched a key on the tree
-        if (curr.getElement().getKey() == key)
-            return curr.getElement().getValue();
-        //looks at left subtree
-        if (curr.getElement().getKey() < key) {
-            curr = curr.getLeftChild();
-            return find(key);
-        }
-        //look at right subtree
-        if (curr.getElement().getKey() > key) {
-            curr = curr.getRightChild();
-            return find(key);
-        }
+        while(true){
+            if(curr==nullNode)
+                return null;
+            if ( getKeyOf(curr)== key){
+                return curr.getElement().getValue();
+                }
+            //looks at left subtree
+            if (getKeyOf(curr) < key) {
+                if(getRightOf(curr)!=nullNode)
+                    curr = getRightOf(curr);
+            }
+            //look at right subtree
+            if (getKeyOf(curr)> key) {
+                if(getLeftOf(curr)!=nullNode)
+                    curr = getLeftOf(curr);
+            }
 
-        return null;
+
+        }
     }
 
 
@@ -66,7 +71,7 @@ public class RedBlackTree implements TreeInterface {
 
         // Insertion fails if already present
         if( curr != nullNode ){
-           //curr.setElement(item.getKey(),item.getValue());
+           curr.setElement(item.getKey(),item.getValue());
             return;
         }
 
@@ -85,12 +90,93 @@ public class RedBlackTree implements TreeInterface {
 
 
     public void delete(int key) {
-        throw new UnsupportedOperationException();
+        found = nullNode;
+        if (header.getRightChild() != nullNode) {
+
+            final int LEFT = 0;
+            final int RIGHT = 1;
+            /* Found item */
+            int dir = RIGHT;
+
+
+    /* Set up helpers */
+            curr = header;
+            grand = parent = nullNode;
+            curr.setRightChild(header.getRightChild());
+
+    /* Search and push a red down */
+            while (curr.get_child(dir) != nullNode) {
+                int last = dir;
+
+      /* Update helpers */
+                grand = parent;
+                parent = curr;
+                curr = curr.get_child(dir);
+                dir = getKeyOf(curr) < key ? RIGHT : LEFT;
+
+      /* Save found node */
+                if (getKeyOf(curr)== key){
+                    found = curr;
+                }
+
+
+      /* Push the red node down */
+                if (!isred(curr) && !isred(curr.get_child(dir))) {
+
+                    if (isred(curr.get_child(~dir)))
+                        parent=parent.set_child(last,singleRotation(curr,dir));
+                        //possible error happening here
+                    else if (!isred(curr.get_child(~dir))) {
+                        RedBlackNode tmp = parent.get_child(~last);
+
+                        if (tmp != nullNode) {
+
+                            if (!isred(tmp.get_child(~last)) && !isred(tmp.get_child(last))) {
+              /* Color flip */
+                                setColorOf(parent, 1);
+                                setColorOf(tmp, 0);
+                                setColorOf(curr, 0);
+                            } else {
+                                int dir2 = (grand.get_child(RIGHT) == parent) ? RIGHT : LEFT;
+
+                                if (isred(tmp.get_child(last))) {
+
+                                    doubleRotation(parent,last); //temporary changeeee
+                                } else if (isred(tmp.get_child(last))) {
+                                    grand.set_child(dir2,singleRotation(parent,last));
+
+                                }
+
+              /* Ensure correct coloring */
+                                setColorOf(curr, 0);
+                                setColorOf(grand.get_child(dir2), 0);
+                                setColorOf(grand.get_child(dir2).get_child(LEFT), 1);
+                                setColorOf(grand.get_child(dir2).get_child(RIGHT), 1);
+                            }
+                        }
+                    }
+                }
+            }
+
+    /* Replace and remove if found */
+            if (found != nullNode) {
+                found.setElement(curr.getElement().getKey(), curr.getElement().getValue());
+                parent.set_child(
+                        parent.get_child(RIGHT) == curr ? RIGHT : LEFT,
+                        curr.get_child(curr.get_child(LEFT) == nullNode ? RIGHT : LEFT));
+            }
+
+    /* Update root and make it black */
+            //this.root = header.get_child(RIGHT);
+            if (header.get_child(RIGHT) != nullNode)
+                setColorOf(header.get_child(RIGHT), 1);
+        }
     }
 
 
     public String remove(int key) {
-        throw new UnsupportedOperationException();
+        delete(key);
+        return found==nullNode ? "not found":found.getElement().getValue();
     }
     @java.lang.Override
     public String toString() {
@@ -101,12 +187,16 @@ public class RedBlackTree implements TreeInterface {
         StringBuilder prefix=new StringBuilder();
         StringBuilder tree=new StringBuilder();
         prefix.append(p);
-        if(t!=nullNode){
+        if(header.getRightChild()==nullNode){
+            return "This tree is empty";
+        }
+        else{
+            if(t!=nullNode && t!=null)
             tree.append(prefix+":"+getColorOf(t)+"("+getKeyOf(t)+","+t.getElement().getValue()+")\n");
-            if(getLeftOf(t)!=nullNode){
+            if(getLeftOf(t)!=nullNode && getLeftOf(t)!=null){
                 tree.append(treeToString(getLeftOf(t), prefix+"-left"));
             }
-            if(getRightOf(t)!=nullNode){
+            if(getRightOf(t)!=nullNode && getLeftOf(t)!=null){
                 tree.append(treeToString(getRightOf(t),prefix+ "-right"));
             }
 
@@ -153,6 +243,23 @@ private int compare(Element item,Element current){
         setColorOf(header.getRightChild(),1);
     }
 
+    private RedBlackNode singleRotation(RedBlackNode node,int dir){
+        int dir2=(dir==0) ? 1:0;
+        RedBlackNode tmp=node.get_child(dir2);
+
+        node.set_child(dir2,tmp.get_child(dir));
+        tmp.set_child(dir,node);
+
+        setColorOf(node,0);
+        setColorOf(tmp,1);
+
+        return tmp;
+    }
+    private RedBlackNode doubleRotation(RedBlackNode node,int dir){
+        int dir2=(dir==0) ? 1:0;
+        node.set_child(dir2,singleRotation(node.get_child(dir2),dir2));
+        return singleRotation(node,dir);
+    }
     private RedBlackNode rotate(Element item,RedBlackNode parent){
         if(compare(item,parent.getElement())<0){
             if(compare(item,getLeftOf(parent).getElement())<0){
@@ -192,24 +299,31 @@ private int compare(Element item,Element current){
 
     //helper methods to check null pointers
 
-    private RedBlackNode getLeftOf(RedBlackNode a){
+    public RedBlackNode getLeftOf(RedBlackNode a){
         return a==nullNode ? nullNode: a.getLeftChild();
 
     }
-    private RedBlackNode getRightOf(RedBlackNode a){
+    public RedBlackNode getRightOf(RedBlackNode a){
         return a==nullNode ? nullNode: a.getRightChild();
 
     }
-    private String getColorOf(RedBlackNode a){
-        return a==nullNode ? "":a.getColorString();
+
+    public String getColorOf(RedBlackNode a){
+        return a==nullNode||a==null ? "":a.getColorString();
     }
-    private void setColorOf(RedBlackNode a,int col){
+    public boolean isred(RedBlackNode a){
+        return (getColorOf(a).equals("RED")) ? true:false;
+    }
+    public void setColorOf(RedBlackNode a,int col){
         if(a!=nullNode){
             a.setColor(col);
         }
     }
-    private int getKeyOf(RedBlackNode a){
-        return a==nullNode ? null:a.getElement().getKey();
+    public int getKeyOf(RedBlackNode a){
+        return a==nullNode||a==null ? null:a.getElement().getKey();
+    }
+    public void makeEmpty(){
+        header.setRightChild(nullNode);
     }
 
 
