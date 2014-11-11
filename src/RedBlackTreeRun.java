@@ -11,7 +11,7 @@ public class RedBlackTreeRun {
 
         rbt.insert(1,"a");
 
-        //rbt.insert(14,"n");
+        rbt.insert(14,"n");
         rbt.insert(9,"n");
 
 

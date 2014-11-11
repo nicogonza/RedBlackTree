@@ -19,9 +19,8 @@ public class RBTValidator {
         }
         scanner.close();
         length=count;
-        Element item=new Element(getKey(0),getValue(0));
-        RedBlackTree t=makeTree(new RedBlackNode(item));
-        return chkproperties(t.header.getRightChild())!=0 ? true:false;
+
+        return chkproperties(makeTree(new RedBlackNode(new Element(getKey(0),getValue(0)))))!=0 ? true:false;
 
      }
 
@@ -67,44 +66,56 @@ public class RBTValidator {
         private String getPrefix(int l){
             return lines[l].substring(0,lines[l].indexOf(":"));
         }
-        private RedBlackTree makeTree(RedBlackNode r){
-            RedBlackTree tree = new RedBlackTree();
-            tree.header.setRightChild(new RedBlackNode(new Element(getKey(0),getValue(0))));
-            tree.root=tree.header.getRightChild();
-            tree.root.setColor(1);
-            tree.parent=tree.root;
-            tree.curr=tree.root;
+        private RedBlackNode makeTree(RedBlackNode r){
             String prefix=getPrefix(0);
-            System.out.println("length "+(length));
-            for(int i=1;i<length;i++){
-                System.out.println("inside for");
-                if((prefix+"-left").equals(getPrefix(i))){
-                    tree.curr.setLeftChild(new RedBlackNode(new Element(getKey(i),getValue(i))));
-                    tree.parent=tree.curr;
-                    tree.curr=tree.curr.getLeftChild();
-                    tree.curr.setColor((getColor(i).equals("RED")) ? 0:1);
-                    System.out.println("-left" + tree.curr.getElement().getKey()+"parent "+tree.parent.getElement().getKey());
-                    prefix=getPrefix(i);
-                }
-                else if((prefix+"-right").equals(getPrefix(i))){
-                    tree.curr.setRightChild(new RedBlackNode(new Element(getKey(i),getValue(i))));
-                    tree.parent=tree.curr;
-                    tree.curr=tree.curr.getRightChild();
-                    tree.curr.setColor((getColor(i).equals("RED")) ? 0:1);
-                    System.out.println("-right" + tree.curr.getElement().getKey()+"parent "+tree.parent.getElement().getKey());
-                    prefix=getPrefix(i);
-                }
-                else{
+            RedBlackNode curr=r;
+            RedBlackNode parent=r;
+            for(int i=1;i<length;i++) {
+                if ((prefix + "-left").equals(getPrefix(i))) {
+                    curr.setLeftChild(new RedBlackNode(new Element(getKey(i), getValue(i))));
+                    parent = curr;
+                    curr = curr.getLeftChild();
+                    curr.setColor((getColor(i).equals("RED")) ? 0 : 1);
+                    System.out.println("-left" + curr.getElement().getKey() + "parent " + parent.getElement().getKey());
+                    prefix = getPrefix(i);
+                } else if ((prefix + "-right").equals(getPrefix(i))) {
+                    curr.setRightChild(new RedBlackNode(new Element(getKey(i), getValue(i))));
+                    parent = curr;
+                    curr = curr.getRightChild();
+                    curr.setColor((getColor(i).equals("RED")) ? 0 : 1);
+                    System.out.println("-right" + curr.getElement().getKey() + "parent " + parent.getElement().getKey());
+                    prefix = getPrefix(i);
+                } else {
                     System.out.println("inside else");
                     i--;
-                    tree.curr=tree.parent;
-                    prefix=getPrefix(i-1);
-                    System.out.println(prefix+tree.curr.getElement().getKey());
+                    curr = parent;
+                    prefix = getPrefix(i - 1);
+                    System.out.println(prefix + curr.getElement().getKey());
                 }
             }
-            System.out.println("tis the tree built from input\n"+tree.toString());
-          return tree;
+            System.out.println(treeToString(r,"root"));
+            return r;
         }
+    private String treeToString(RedBlackNode root,String p){
+        StringBuilder prefix=new StringBuilder();
+        StringBuilder tree=new StringBuilder();
+        prefix.append(p);
+        if(root==null){
+            return "This tree is empty";
+        }
+        else{
+            if(root!=null)
+                tree.append(prefix+":"+root.getColorString()+"("+root.getElement().getKey()+","+root.getElement().getValue()+")\n");
+            if(root.getLeftChild()!=null){
+                tree.append(treeToString(root.getLeftChild(), prefix+"-left"));
+            }
+            if(root.getRightChild() !=null){
+                tree.append(treeToString(root.getRightChild(),prefix+ "-right"));
+            }
 
 
+        }
+        return tree.toString();
+
+    }
 }
