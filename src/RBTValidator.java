@@ -7,26 +7,26 @@ public class RBTValidator {
     String[] lines= new String[30];
     int length;
     public boolean validate (String a){
-        System.out.println("string comming in "+a);
         Scanner scanner = new Scanner(a);
         int count=0;
         //files up array with each line from string
         while (scanner.hasNextLine()) {
             String line = scanner.nextLine();
-            lines[count]=line;
+            lines[count] = line;
             count++;
             // process the line
         }
         scanner.close();
         length=count;
-
-        return chkproperties(makeTree(new RedBlackNode(new Element(getKey(0),getValue(0)))))!=0 ? true:false;
+        //if root is not red return false
+        if(getColor(0).equals("RED"))
+            return false;
+        else return chkproperties(makeTree(new RedBlackNode(new Element(getKey(0),getValue(0)))))!=0 ? true:false;
 
      }
 
     private int chkproperties(RedBlackNode root) {
         int l,r;
-        //root not black violation
         if(root==null)
             return 1;
             else{
@@ -68,6 +68,7 @@ public class RBTValidator {
         }
         private RedBlackNode makeTree(RedBlackNode r){
             String prefix=getPrefix(0);
+            r.setColor((getColor(0)=="RED") ? 0:1);
             RedBlackNode curr=r;
             RedBlackNode parent=r;
             for(int i=1;i<length;i++) {
@@ -76,24 +77,19 @@ public class RBTValidator {
                     parent = curr;
                     curr = curr.getLeftChild();
                     curr.setColor((getColor(i).equals("RED")) ? 0 : 1);
-                    System.out.println("-left" + curr.getElement().getKey() + "parent " + parent.getElement().getKey());
                     prefix = getPrefix(i);
                 } else if ((prefix + "-right").equals(getPrefix(i))) {
                     curr.setRightChild(new RedBlackNode(new Element(getKey(i), getValue(i))));
                     parent = curr;
                     curr = curr.getRightChild();
                     curr.setColor((getColor(i).equals("RED")) ? 0 : 1);
-                    System.out.println("-right" + curr.getElement().getKey() + "parent " + parent.getElement().getKey());
                     prefix = getPrefix(i);
                 } else {
-                    System.out.println("inside else");
                     i--;
                     curr = parent;
                     prefix = getPrefix(i - 1);
-                    System.out.println(prefix + curr.getElement().getKey());
                 }
             }
-            System.out.println(treeToString(r,"root"));
             return r;
         }
     private String treeToString(RedBlackNode root,String p){

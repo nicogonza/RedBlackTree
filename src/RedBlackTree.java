@@ -95,26 +95,24 @@ public class RedBlackTree implements TreeInterface {
 
             final int LEFT = 0;
             final int RIGHT = 1;
-            /* Found item */
+
             int dir = RIGHT;
 
-
-    /* Set up helpers */
             curr = header;
             grand = parent = nullNode;
             curr.setRightChild(header.getRightChild());
 
-    /* Search and push a red down */
+        // Search and push a red down
             while (curr.get_child(dir) != nullNode) {
                 int last = dir;
 
-      /* Update helpers */
+      // Update nodes
                 grand = parent;
                 parent = curr;
                 curr = curr.get_child(dir);
                 dir = getKeyOf(curr) < key ? RIGHT : LEFT;
 
-      /* Save found node */
+      //save found node to delete
                 if (getKeyOf(curr)== key){
                     found = curr;
                 }
@@ -122,7 +120,6 @@ public class RedBlackTree implements TreeInterface {
 
       /* Push the red node down */
                 if (!isred(curr) && !isred(curr.get_child(dir))) {
-
                     if (isred(curr.get_child(~dir)))
                         parent=parent.set_child(last,singleRotation(curr,dir));
                         //possible error happening here
@@ -130,7 +127,6 @@ public class RedBlackTree implements TreeInterface {
                         RedBlackNode tmp = parent.get_child(~last);
 
                         if (tmp != nullNode) {
-
                             if (!isred(tmp.get_child(~last)) && !isred(tmp.get_child(last))) {
               /* Color flip */
                                 setColorOf(parent, 1);
@@ -140,9 +136,8 @@ public class RedBlackTree implements TreeInterface {
                                 int dir2 = (grand.get_child(RIGHT) == parent) ? RIGHT : LEFT;
 
                                 if (isred(tmp.get_child(last))) {
-
-                                    doubleRotation(parent,last); //temporary changeeee
-                                } else if (isred(tmp.get_child(last))) {
+                                    grand.set_child(dir2,doubleRotation(parent,last));
+                                } else if (isred(tmp.get_child(~last))) {
                                     grand.set_child(dir2,singleRotation(parent,last));
 
                                 }
@@ -160,14 +155,13 @@ public class RedBlackTree implements TreeInterface {
 
     /* Replace and remove if found */
             if (found != nullNode) {
-                found.setElement(curr.getElement().getKey(), curr.getElement().getValue());
-                parent.set_child(
+                 parent.set_child(
                         parent.get_child(RIGHT) == curr ? RIGHT : LEFT,
                         curr.get_child(curr.get_child(LEFT) == nullNode ? RIGHT : LEFT));
             }
 
     /* Update root and make it black */
-            //this.root = header.get_child(RIGHT);
+            this.root = header.get_child(RIGHT);
             if (header.get_child(RIGHT) != nullNode)
                 setColorOf(header.get_child(RIGHT), 1);
         }
