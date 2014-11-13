@@ -4,14 +4,13 @@
  */
 public class RedBlackTree implements TreeInterface {
 
-    RedBlackNode root=nullNode;
     RedBlackNode curr;
     RedBlackNode header;
     public static RedBlackNode nullNode;
     RedBlackNode parent;
     RedBlackNode grand;
     RedBlackNode great;
-    private RedBlackNode found ;
+    private RedBlackNode removed ;
     //intializers
     public RedBlackTree(){
         header=new RedBlackNode(new Element(-9999999,"header"));
@@ -69,7 +68,7 @@ public class RedBlackTree implements TreeInterface {
 
         }
 
-        // Insertion fails if already present
+        // Insertion overrides value if key was present
         if( curr != nullNode ){
            curr.setElement(item.getKey(),item.getValue());
             return;
@@ -90,7 +89,7 @@ public class RedBlackTree implements TreeInterface {
 
 
     public void delete(int key) {
-        found = nullNode;
+        RedBlackNode found=null;
         if (header.getRightChild() != nullNode) {
 
             final int LEFT = 0;
@@ -102,79 +101,85 @@ public class RedBlackTree implements TreeInterface {
             grand = parent = nullNode;
             curr.setRightChild(header.getRightChild());
 
-        // Search and push a red down
+            // Search and push a red down
             while (curr.get_child(dir) != nullNode) {
                 int last = dir;
 
-      // Update nodes
+                // Update nodes
                 grand = parent;
                 parent = curr;
                 curr = curr.get_child(dir);
                 dir = getKeyOf(curr) < key ? RIGHT : LEFT;
 
-      //save found node to delete
-                if (getKeyOf(curr)== key){
+                //save found node to delete
+                if (getKeyOf(curr) == key)
                     found = curr;
-                }
+
 
 
       /* Push the red node down */
                 if (!isred(curr) && !isred(curr.get_child(dir))) {
-                    if (isred(curr.get_child(~dir)))
-                        parent=parent.set_child(last,singleRotation(curr,dir));
-                        //possible error happening here
+                    if (isred(curr.get_child(~dir))){
+                        parent= parent.set_child(last, singleRotation(curr, dir));
+                    }
                     else if (!isred(curr.get_child(~dir))) {
                         RedBlackNode tmp = parent.get_child(~last);
 
                         if (tmp != nullNode) {
                             if (!isred(tmp.get_child(~last)) && !isred(tmp.get_child(last))) {
               /* Color flip */
-                                setColorOf(parent, 1);
-                                setColorOf(tmp, 0);
-                                setColorOf(curr, 0);
-                            } else {
+                                parent.setColor(1);
+                                tmp.setColor(0);
+                                curr.setColor(0);
+                            }
+                            else {
                                 int dir2 = (grand.get_child(RIGHT) == parent) ? RIGHT : LEFT;
 
-                                if (isred(tmp.get_child(last))) {
-                                    grand.set_child(dir2,doubleRotation(parent,last));
-                                } else if (isred(tmp.get_child(~last))) {
-                                    grand.set_child(dir2,singleRotation(parent,last));
-
-                                }
+                                if (isred(tmp.get_child(last)))
+                                    grand.set_child(dir2, doubleRotation(parent, last));
+                                else if (isred(tmp.get_child(~last)))
+                                    grand.set_child(dir2, singleRotation(parent, last));
 
               /* Ensure correct coloring */
-                                setColorOf(curr, 0);
-                                setColorOf(grand.get_child(dir2), 0);
-                                setColorOf(grand.get_child(dir2).get_child(LEFT), 1);
-                                setColorOf(grand.get_child(dir2).get_child(RIGHT), 1);
+                               curr.setColor(0);
+                                grand.get_child(dir2).setColor(0);
+                                grand.get_child(dir2).getLeftChild().setColor(1);
+                                grand.get_child(dir2).getRightChild().setColor(1);
+
                             }
                         }
                     }
                 }
             }
 
+
+
     /* Replace and remove if found */
-            if (found != nullNode) {
-                 parent.set_child(
+            if (found != null) {
+                removed=new RedBlackNode(found.getElement());
+                found.setElement(getKeyOf(curr),curr.getElement().getValue());
+                parent.set_child(
                         parent.get_child(RIGHT) == curr ? RIGHT : LEFT,
-                        curr.get_child(curr.get_child(LEFT) == nullNode ? RIGHT : LEFT));
+                        curr.get_child(curr.get_child(LEFT) == nullNode ? LEFT : LEFT));
             }
 
     /* Update root and make it black */
-            this.root = header.get_child(RIGHT);
             if (header.get_child(RIGHT) != nullNode)
-                setColorOf(header.get_child(RIGHT), 1);
+                header.get_child(RIGHT).setColor(1);
+
         }
     }
 
 
     public String remove(int key) {
+        removed=null;
+        System.out.println(key+" in remove");
         delete(key);
-        return found==nullNode ? "not found":found.getElement().getValue();
+        return removed==null ? null:removed.getElement().getValue();
     }
     @java.lang.Override
     public String toString() {
-        return treeToString(header.getRightChild(),"root");
+        return treeToString(header.getRightChild(),"root")+"\n";
 
     }
     private String treeToString(RedBlackNode t,String p){
@@ -193,7 +198,6 @@ public class RedBlackTree implements TreeInterface {
             if(getRightOf(t)!=nullNode && getLeftOf(t)!=null){
                 tree.append(treeToString(getRightOf(t),prefix+ "-right"));
             }
-
 
         }
         return tree.toString();
@@ -226,7 +230,7 @@ private int compare(Element item,Element current){
             setColorOf(getRightOf(curr), 1);
 
         //double red violation from parent and child must rotate
-        if(getColorOf(parent).equals("RED")){
+        if(isred(parent)){
             setColorOf(grand,0);
             if((compare(item,grand.getElement())<0)!=
                (compare(item,parent.getElement())<0))
@@ -238,20 +242,19 @@ private int compare(Element item,Element current){
     }
 
     private RedBlackNode singleRotation(RedBlackNode node,int dir){
-        int dir2=(dir==0) ? 1:0;
-        RedBlackNode tmp=node.get_child(dir2);
 
-        node.set_child(dir2,tmp.get_child(dir));
+        RedBlackNode tmp=node.get_child(~dir);
+
+        node.set_child(~dir,tmp.get_child(dir));
         tmp.set_child(dir,node);
 
-        setColorOf(node,0);
-        setColorOf(tmp,1);
+        node.setColor(0);
+        tmp.setColor(1);
 
         return tmp;
     }
     private RedBlackNode doubleRotation(RedBlackNode node,int dir){
-        int dir2=(dir==0) ? 1:0;
-        node.set_child(dir2,singleRotation(node.get_child(dir2),dir2));
+        node.set_child(~dir,singleRotation(node.get_child(~dir),~dir));
         return singleRotation(node,dir);
     }
     private RedBlackNode rotate(Element item,RedBlackNode parent){

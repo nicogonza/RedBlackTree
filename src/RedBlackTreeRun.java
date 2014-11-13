@@ -6,12 +6,13 @@ public class RedBlackTreeRun {
         System.out.println("***********in testing Enviorment**************");
         RedBlackTree rbt = new RedBlackTree();
         RBTValidator validate = new RBTValidator();
-        System.out.println(rbt);
+
+
        System.out.println("test one, delete red leaf 10");
         rbt.insert(5, "na");
         rbt.insert(10, "sucks");
         rbt.delete(10);
-        System.out.println(rbt);
+        System.out.print(rbt);
         System.out.println(validate.validate(rbt.toString()));
         rbt.makeEmpty();
 
@@ -45,9 +46,10 @@ public class RedBlackTreeRun {
         rbt.insert(3, "c");
         rbt.insert(8, "h");
         rbt.insert(6, "f");
-        rbt.delete(1);
         System.out.println(rbt);
-        //System.out.println(validate.validate(rbt.toString()));
+        rbt.delete(1);
+        System.out.print(rbt);
+        System.out.print(validate.validate(rbt.toString()));
         rbt.makeEmpty();
 //failed
         System.out.println("Test five, delete a black node with two red children (large tree) 6");
@@ -101,7 +103,7 @@ public class RedBlackTreeRun {
         rbt.insert(5, "nl");
         rbt.delete(5);
         System.out.println(rbt);
-        System.out.println(validate.validate(rbt.toString()));
+        //System.out.println(validate.validate(rbt.toString()));
         rbt.makeEmpty();
 
         System.out.println("test nine, give choice where it has 2 red children and picks wrong 55");

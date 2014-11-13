@@ -66,32 +66,36 @@ public class RBTValidator {
         private String getPrefix(int l){
             return lines[l].substring(0,lines[l].indexOf(":"));
         }
-        private RedBlackNode makeTree(RedBlackNode r){
-            String prefix=getPrefix(0);
-            r.setColor((getColor(0)=="RED") ? 0:1);
-            RedBlackNode curr=r;
-            RedBlackNode parent=r;
-            for(int i=1;i<length;i++) {
+        private RedBlackNode makeTree(RedBlackNode r) {
+            String prefix = getPrefix(0);
+            r.setColor((getColor(0) == "RED") ? 0 : 1);
+            RedBlackNode curr = r;
+
+
+            for (int i = 1; i < length-1; i++) {
                 if ((prefix + "-left").equals(getPrefix(i))) {
                     curr.setLeftChild(new RedBlackNode(new Element(getKey(i), getValue(i))));
-                    parent = curr;
+                    curr.getLeftChild().setParent(curr);
                     curr = curr.getLeftChild();
                     curr.setColor((getColor(i).equals("RED")) ? 0 : 1);
                     prefix = getPrefix(i);
                 } else if ((prefix + "-right").equals(getPrefix(i))) {
                     curr.setRightChild(new RedBlackNode(new Element(getKey(i), getValue(i))));
-                    parent = curr;
+                    curr.getRightChild().setParent(curr);
                     curr = curr.getRightChild();
                     curr.setColor((getColor(i).equals("RED")) ? 0 : 1);
                     prefix = getPrefix(i);
                 } else {
+                    curr = curr.getParent();
+                    prefix = prefix.substring(0, prefix.lastIndexOf("-"));
                     i--;
-                    curr = parent;
-                    prefix = getPrefix(i - 1);
+
+
                 }
             }
             return r;
         }
+
     private String treeToString(RedBlackNode root,String p){
         StringBuilder prefix=new StringBuilder();
         StringBuilder tree=new StringBuilder();

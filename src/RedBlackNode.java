@@ -7,7 +7,8 @@ public class RedBlackNode {
     private RedBlackNode left;
     private RedBlackNode right;
     private int color=0;
-
+    //added
+    private RedBlackNode parent;
 
 
     public RedBlackNode(Element e, RedBlackNode l, RedBlackNode r) {
@@ -64,7 +65,6 @@ public class RedBlackNode {
         element = new Element(k, v);
     }
 
-    //added isRed to easily check if is red  and imprpove readibility of tree code.
 
     public String getColorString() {
         if(getColor()==0)
@@ -86,6 +86,10 @@ public class RedBlackNode {
     public RedBlackNode set_child(int d,RedBlackNode c){
         return (d==0)? setLeftChild(c):setRightChild(c);
     }
+    public RedBlackNode setParent(RedBlackNode p){
+        parent=p;return p;
+    }
+    public RedBlackNode getParent(){return parent;}
 
 
 }
