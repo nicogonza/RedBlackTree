@@ -6,7 +6,7 @@ public class RedBlackNode {
     private Element element;
     private RedBlackNode left;
     private RedBlackNode right;
-    private int color=0;
+    private int color;
     //added
     private RedBlackNode parent;
 
@@ -15,6 +15,7 @@ public class RedBlackNode {
         element = e;
         left = l;
         right = r;
+        color=1;
     }
 
     //added default constructor;
@@ -22,6 +23,7 @@ public class RedBlackNode {
         element = null;
         left = null;
         right = null;
+        color=1;
     }
 
     //added modified constructor

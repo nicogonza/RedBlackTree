@@ -104,7 +104,8 @@ public class RedBlackTree implements TreeInterface {
             // Search and push a red down
             while (curr.get_child(dir) != nullNode) {
                 int last = dir;
-
+                int ndir=(dir==1) ? 0:1;
+                int nlast=last==1 ? 0:1;
                 // Update nodes
                 grand = parent;
                 parent = curr;
@@ -115,19 +116,16 @@ public class RedBlackTree implements TreeInterface {
                 if (getKeyOf(curr) == key)
                     found = curr;
 
-
-
-      /* Push the red node down */
                 if (!isred(curr) && !isred(curr.get_child(dir))) {
-                    if (isred(curr.get_child(~dir))){
+                    if (isred(curr.get_child(ndir))){
+
                         parent= parent.set_child(last, singleRotation(curr, dir));
                     }
-                    else if (!isred(curr.get_child(~dir))) {
-                        RedBlackNode tmp = parent.get_child(~last);
+                    else if (!isred(curr.get_child(ndir))) {
+                        RedBlackNode tmp = parent.get_child(nlast);
 
                         if (tmp != nullNode) {
-                            if (!isred(tmp.get_child(~last)) && !isred(tmp.get_child(last))) {
-              /* Color flip */
+                            if (!isred(tmp.get_child(nlast)) && !isred(tmp.get_child(last))) {
                                 parent.setColor(1);
                                 tmp.setColor(0);
                                 curr.setColor(0);
@@ -137,11 +135,9 @@ public class RedBlackTree implements TreeInterface {
 
                                 if (isred(tmp.get_child(last)))
                                     grand.set_child(dir2, doubleRotation(parent, last));
-                                else if (isred(tmp.get_child(~last)))
+                                else if (isred(tmp.get_child(nlast)))
                                     grand.set_child(dir2, singleRotation(parent, last));
-
-              /* Ensure correct coloring */
-                               curr.setColor(0);
+                                curr.setColor(0);
                                 grand.get_child(dir2).setColor(0);
                                 grand.get_child(dir2).getLeftChild().setColor(1);
                                 grand.get_child(dir2).getRightChild().setColor(1);
@@ -152,9 +148,6 @@ public class RedBlackTree implements TreeInterface {
                 }
             }
 
-
-
-    /* Replace and remove if found */
             if (found != null) {
                 removed=new RedBlackNode(found.getElement());
                 found.setElement(getKeyOf(curr),curr.getElement().getValue());
@@ -163,7 +156,6 @@ public class RedBlackTree implements TreeInterface {
                         curr.get_child(curr.get_child(LEFT) == nullNode ? LEFT : LEFT));
             }
 
-    /* Update root and make it black */
             if (header.get_child(RIGHT) != nullNode)
                 header.get_child(RIGHT).setColor(1);
 
@@ -173,7 +165,6 @@ public class RedBlackTree implements TreeInterface {
 
     public String remove(int key) {
         removed=null;
-        System.out.println(key+" in remove");
         delete(key);
         return removed==null ? null:removed.getElement().getValue();
     }
@@ -242,10 +233,11 @@ private int compare(Element item,Element current){
     }
 
     private RedBlackNode singleRotation(RedBlackNode node,int dir){
+        int ndir=(dir==1) ? 0:1;
 
-        RedBlackNode tmp=node.get_child(~dir);
+        RedBlackNode tmp=node.get_child(ndir);
 
-        node.set_child(~dir,tmp.get_child(dir));
+        node.set_child(ndir,tmp.get_child(dir));
         tmp.set_child(dir,node);
 
         node.setColor(0);
@@ -254,7 +246,8 @@ private int compare(Element item,Element current){
         return tmp;
     }
     private RedBlackNode doubleRotation(RedBlackNode node,int dir){
-        node.set_child(~dir,singleRotation(node.get_child(~dir),~dir));
+        int ndir=(dir==1) ? 0:1;
+        node.set_child(ndir,singleRotation(node.get_child(ndir),ndir));
         return singleRotation(node,dir);
     }
     private RedBlackNode rotate(Element item,RedBlackNode parent){

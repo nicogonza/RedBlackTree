@@ -4,8 +4,12 @@ import java.util.Scanner;
  * Created by Nico on 11/8/14.
  */
 public class RBTValidator {
-    String[] lines= new String[30];
+    String[] lines;
     int length;
+    public RBTValidator(){
+        lines=new String[50];
+        length=0;
+    }
     public boolean validate (String a){
         Scanner scanner = new Scanner(a);
         int count=0;

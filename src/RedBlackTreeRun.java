@@ -7,7 +7,6 @@ public class RedBlackTreeRun {
         RedBlackTree rbt = new RedBlackTree();
         RBTValidator validate = new RBTValidator();
 
-
        System.out.println("test one, delete red leaf 10");
         rbt.insert(5, "na");
         rbt.insert(10, "sucks");
